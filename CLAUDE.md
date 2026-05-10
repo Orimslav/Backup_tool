@@ -145,7 +145,7 @@ Ko-fi icon in header opens browser on click. Both Ko-fi and GitHub buttons appea
 
 Key settings:
 - `datas=[('img/', 'img/')]` — bundles the entire `img/` folder
-- `console=True, hide_console='hide-early'` — **workaround for Python 3.14**: `console=False` (windowed subsystem) silently crashes on Python 3.14 with PyInstaller 6.x; `hide_console='hide-early'` achieves the same result (no visible console) while using the console subsystem which works correctly
+- `console=False` — windowed subsystem, no console window. Works correctly with Python 3.12 (GitHub Actions). Local builds with Python 3.14 may silently crash with PyInstaller 6.x — use the GitHub Actions release exe for distribution.
 - `upx=False` — avoids UPX-related crashes
 - Hidden imports: `pystray._win32`, `pyzipper.zipfile_aes`
 
