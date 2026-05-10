@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/pip.exe install *)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(start \"\" .venv/Scripts/python.exe backup_app.py)",
+      "Read(//c/WebappX/**)",
+      "Read(//c/WebappX/Dochadzka/**)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(tasklist)",
+      "Bash(.venv/Scripts/pyinstaller backup_app.py --name BackupOrimDebug --onefile --console --add-data 'img;img' --hidden-import pystray._win32 --hidden-import pyzipper.zipfile_aes --icon img/orimslav_logo_blue_transparent.ico --clean)",
+      "Bash(python *)"
+    ]
+  }
+}

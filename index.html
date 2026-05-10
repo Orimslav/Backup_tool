@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BackupOrim — Folder backup tool for Windows</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#111;display:flex;flex-direction:column;align-items:center;padding:0;font-family:'Segoe UI',sans-serif;color:#ccc;min-height:100vh;}
+
+  /* Top bar */
+  .topbar{width:100%;background:#1e1e2e;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;}
+  .topbar-logo{display:flex;align-items:center;gap:10px;}
+  .topbar-logo img{height:32px;width:auto;}
+  .topbar-logo span{font-size:12px;color:#666;font-family:monospace;}
+  .lang-switcher{display:flex;gap:6px;}
+  .lang-btn{background:none;border:1.5px solid #444;border-radius:4px;cursor:pointer;padding:3px 6px;display:flex;align-items:center;gap:5px;font-size:11px;color:#888;transition:border-color 0.15s,color 0.15s;}
+  .lang-btn:hover{border-color:#777;color:#ccc;}
+  .lang-btn.active{border-color:#1D9E75;color:#ccc;}
+  .lang-btn img{width:20px;height:14px;object-fit:cover;border-radius:2px;}
+
+  /* Main content */
+  .main{width:100%;max-width:760px;padding:32px 20px;}
+  .header{text-align:center;margin-bottom:32px;}
+  .header h1{font-size:22px;color:#e0e0e0;font-weight:600;margin-bottom:8px;}
+  .header p{font-size:13px;color:#888;line-height:1.6;}
+  .header .badge{display:inline-block;background:#2a2a3e;border:1px solid #444;border-radius:4px;padding:2px 8px;font-size:11px;color:#aaa;font-family:monospace;margin-top:6px;}
+
+  .card{background:#1e1e2e;border:1.5px solid #555;border-radius:8px;padding:24px;margin-bottom:20px;}
+  .card-title{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #333;}
+
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:5px;font-size:13px;font-weight:500;text-decoration:none;border:none;cursor:pointer;transition:opacity 0.15s;}
+  .btn:hover{opacity:0.82;}
+  .btn-primary{background:#2980b9;color:#fff;}
+  .btn-secondary{background:#2a2a3e;border:1px solid #555;color:#ccc;}
+  .btn-demo{background:#1D9E75;color:#fff;}
+  .btn svg{flex-shrink:0;}
+
+  /* Big primary download CTA */
+  .btn-big{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none;background:#2980b9;color:#fff;transition:opacity 0.15s;border:1px solid #185FA5;}
+  .btn-big:hover{opacity:0.88;}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .info-item label{display:block;font-size:10px;color:#666;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+  .info-item span{font-size:12px;color:#bbb;font-family:monospace;}
+
+  .table{width:100%;border-collapse:collapse;font-size:12px;}
+  .table th{text-align:left;padding:5px 8px;color:#666;font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #333;}
+  .table td{padding:5px 8px;color:#bbb;border-bottom:1px solid #2a2a3e;font-family:monospace;}
+  .table tr:last-child td{border-bottom:none;}
+  .tag{display:inline-block;background:#252535;border:1px solid #444;border-radius:3px;padding:1px 6px;font-size:10px;color:#aaa;}
+  .tag-blue{border-color:#185FA5;color:#85B7EB;background:#0a1e35;}
+  .tag-green{border-color:#0F6E56;color:#9FE1CB;background:#0a2e22;}
+  .tag-amber{border-color:#BA7517;color:#EF9F27;background:#2a1e08;}
+
+  /* Steps */
+  .steps{counter-reset:step;list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px;}
+  .steps li{counter-increment:step;position:relative;padding:8px 12px 8px 38px;background:#252535;border:1px solid #333;border-radius:5px;font-size:12px;color:#bbb;line-height:1.5;}
+  .steps li::before{content:counter(step);position:absolute;left:10px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:#0a1e35;color:#85B7EB;border:1px solid #185FA5;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px;font-family:monospace;}
+
+  /* Features grid */
+  .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+  .feat{background:#252535;border:1px solid #333;border-radius:5px;padding:10px 12px;font-size:12px;line-height:1.55;color:#bbb;}
+  .feat strong{display:block;color:#e0e0e0;font-weight:600;margin-bottom:3px;font-size:12px;}
+
+  /* Code blocks */
+  pre{background:#0a0a0f;border:1px solid #333;color:#bbb;padding:14px 16px;border-radius:5px;overflow-x:auto;font-size:12px;line-height:1.6;font-family:monospace;margin:10px 0;}
+  pre code{background:transparent;color:inherit;padding:0;}
+
+  /* Inline code */
+  p code, td code, li code, .feat code{background:#0a1e35;color:#85B7EB;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:0.9em;border:1px solid #185FA5;}
+  .steps code{background:#0a1e35;color:#85B7EB;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;border:1px solid #185FA5;}
+
+  /* Screenshot */
+  .screenshot{margin:0;border-radius:6px;overflow:hidden;border:1px solid #333;background:#0a0a0f;}
+  .screenshot img{display:block;width:100%;height:auto;}
+
+  /* Section subtitle inside cards */
+  .sub{font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;}
+
+  /* Footer */
+  .footer{text-align:center;color:#444;font-size:11px;margin-top:24px;font-family:monospace;}
+  .footer a{color:#555;text-decoration:none;}
+  .footer a:hover{color:#888;}
+  .footer-row{margin-bottom:6px;}
+
+  /* Ko-fi support button — amber accent matching mac-note pattern */
+  .kofi-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .kofi-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;background:#2a1e08;border:1px solid #BA7517;color:#EF9F27;transition:all 0.15s;}
+  .kofi-btn:hover{background:#3a2810;color:#FFB72E;}
+
+  @media(max-width:520px){
+    .info-grid{grid-template-columns:1fr;}
+    .btn-row{flex-direction:column;}
+    .btn{justify-content:center;}
+    .btn-big{justify-content:center;width:100%;}
+    .topbar{padding:10px 16px;}
+    .feat-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <img src="img/orimslav_logo_blue_transparent.png" alt="Orimslav logo">
+    <span>Backup_tool</span>
+  </div>
+  <div class="lang-switcher">
+    <button class="lang-btn" id="btn-sk" onclick="setLang('sk')">
+      <img src="img/flag_sk.png" alt="SK"><span>SK</span>
+    </button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">
+      <img src="img/flag_en.png" alt="EN"><span>EN</span>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 data-sk="BackupOrim" data-en="BackupOrim">BackupOrim</h1>
+    <p data-sk="Jednoduchý nástroj na zálohovanie priečinkov pre Windows<br>ZIP / RAR · šifrovanie AES-256 · plánovanie · systémová lišta"
+       data-en="Simple folder backup tool for Windows<br>ZIP / RAR · AES-256 encryption · scheduling · system tray">
+      Jednoduchý nástroj na zálohovanie priečinkov pre Windows<br>ZIP / RAR · šifrovanie AES-256 · plánovanie · systémová lišta
+    </p>
+    <span class="badge">Python 3.12 · tkinter · pyzipper · pystray · winotify</span>
+  </div>
+
+  <!-- Download -->
+  <div class="card">
+    <div class="card-title" data-sk="Stiahnutie" data-en="Download">Stiahnutie</div>
+    <p class="sub"
+       data-sk="<strong style='color:#e0e0e0'>Python nie je potrebný</strong> — jediný prenosný .exe (~20 MB), beží na Windows 10 / 11 hneď po stiahnutí."
+       data-en="<strong style='color:#e0e0e0'>No Python required</strong> — single portable .exe (~20 MB), runs on Windows 10 / 11 out of the box.">
+      <strong style="color:#e0e0e0">Python nie je potrebný</strong> — jediný prenosný .exe (~20 MB), beží na Windows 10 / 11 hneď po stiahnutí.
+    </p>
+
+    <div class="btn-row" style="margin-bottom:14px;">
+      <a class="btn-big" href="https://github.com/Orimslav/Backup_tool/releases/latest/download/BackupOrim.exe">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V2a.75.75 0 00-1.5 0v6.44L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75zM2 12.75a.75.75 0 000 1.5h12a.75.75 0 000-1.5H2z"/></svg>
+        <span data-sk="Stiahnuť BackupOrim.exe" data-en="Download BackupOrim.exe">Stiahnuť BackupOrim.exe</span>
+      </a>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:14px;">
+      <a class="btn btn-secondary" href="https://github.com/Orimslav/Backup_tool/releases" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V2a.75.75 0 00-1.5 0v6.44L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75zM2 12.75a.75.75 0 000 1.5h12a.75.75 0 000-1.5H2z"/></svg>
+        <span data-sk="Všetky verzie (GitHub Releases)" data-en="All versions (GitHub Releases)">Všetky verzie (GitHub Releases)</span>
+      </a>
+      <a class="btn btn-secondary" href="https://github.com/Orimslav/Backup_tool/archive/refs/heads/main.zip">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M9.75 1.5H3.5A1.5 1.5 0 002 3v10a1.5 1.5 0 001.5 1.5h9A1.5 1.5 0 0014 13V5.75L9.75 1.5zm0 1.5L12.5 5.75H9.75V3zM3.5 13V3h4.75v3.5A.75.75 0 009 7.25h3.5L12.5 13H3.5z"/></svg>
+        <span data-sk="Zdrojový kód (.zip)" data-en="Source code (.zip)">Zdrojový kód (.zip)</span>
+      </a>
+    </div>
+
+    <ol class="steps">
+      <li data-sk="Otvorte odkaz vyššie a uložte <code>BackupOrim.exe</code> (alebo kliknite priamo na veľké modré tlačidlo)."
+          data-en="Open the link above and save <code>BackupOrim.exe</code> (or click the big blue button directly).">
+        Otvorte odkaz vyššie a uložte <code>BackupOrim.exe</code> (alebo kliknite priamo na veľké modré tlačidlo).
+      </li>
+      <li data-sk="Spustite dvojklikom — žiadna inštalácia, žiadny Python, nič iné."
+          data-en="Double-click to launch — no installation, no Python, nothing else needed.">
+        Spustite dvojklikom — žiadna inštalácia, žiadny Python, nič iné.
+      </li>
+      <li data-sk="Pri prvom spustení môže Windows SmartScreen zobraziť varovanie → kliknite <strong>„Ďalšie informácie&quot; → „Spustiť&quot;</strong>."
+          data-en="On first launch Windows SmartScreen may appear → click <strong>“More info” → “Run anyway”</strong>.">
+        Pri prvom spustení môže Windows SmartScreen zobraziť varovanie → kliknite <strong>„Ďalšie informácie" → „Spustiť"</strong>.
+      </li>
+    </ol>
+  </div>
+
+  <!-- Screenshot -->
+  <div class="card">
+    <div class="card-title" data-sk="Screenshot" data-en="Screenshot">Screenshot</div>
+    <div class="screenshot">
+      <img id="screenshot-img" src="img/sk_screen.png" alt="BackupOrim — UI" loading="lazy">
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="card">
+    <div class="card-title" data-sk="Funkcie" data-en="Features">Funkcie</div>
+    <div class="feat-grid">
+
+      <div class="feat">
+        <strong data-sk="Viacero priečinkov" data-en="Multiple folders">Viacero priečinkov</strong>
+        <span data-sk="Ľubovoľný počet zdrojov; každý sa archivuje samostatne."
+              data-en="Add as many source folders as you need; each archived independently.">
+          Ľubovoľný počet zdrojov; každý sa archivuje samostatne.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="ZIP a RAR" data-en="ZIP and RAR">ZIP a RAR</strong>
+        <span data-sk="ZIP s AES-256 šifrovaním (<code>pyzipper</code>); RAR cez <code>rar.exe</code> (WinRAR)."
+              data-en="ZIP with AES-256 encryption (<code>pyzipper</code>); RAR via <code>rar.exe</code> (WinRAR).">
+          ZIP s AES-256 šifrovaním (<code>pyzipper</code>); RAR cez <code>rar.exe</code> (WinRAR).
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Voliteľné heslo" data-en="Optional password">Voliteľné heslo</strong>
+        <span data-sk="Šifruje obsah aj názvy súborov. Nikdy sa neukladá do logov."
+              data-en="Encrypts contents and file names. Never saved to logs.">
+          Šifruje obsah aj názvy súborov. Nikdy sa neukladá do logov.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Politiky čistenia" data-en="Cleanup policies">Politiky čistenia</strong>
+        <span data-sk="Posledných N záloh alebo staršie ako N dní — pre každý priečinok zvlášť."
+              data-en="Keep last N backups or delete archives older than N days — per folder.">
+          Posledných N záloh alebo staršie ako N dní — pre každý priečinok zvlášť.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Vylúčené vzory" data-en="Exclude patterns">Vylúčené vzory</strong>
+        <span data-sk="Glob vzory: <code>node_modules</code>, <code>__pycache__</code>, <code>.git</code>, <code>*.tmp</code>."
+              data-en="Glob patterns: <code>node_modules</code>, <code>__pycache__</code>, <code>.git</code>, <code>*.tmp</code>.">
+          Glob vzory: <code>node_modules</code>, <code>__pycache__</code>, <code>.git</code>, <code>*.tmp</code>.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Kontrola integrity" data-en="Integrity check">Kontrola integrity</strong>
+        <span data-sk="Každý archív sa overí ihneď po vytvorení. Poškodené sa zmažú a nahlásia."
+              data-en="Every archive is verified after creation. Corrupt files deleted and reported.">
+          Každý archív sa overí ihneď po vytvorení. Poškodené sa zmažú a nahlásia.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Automatické spustenie" data-en="Autostart">Automatické spustenie</strong>
+        <span data-sk="Pri prihlásení · podľa plánu (denne / pracovné dni / vlastné dni)."
+              data-en="At logon · on schedule (daily / weekdays / custom days).">
+          Pri prihlásení · podľa plánu (denne / pracovné dni / vlastné dni).
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Vypnutie PC po zálohe" data-en="Shut down after backup">Vypnutie PC po zálohe</strong>
+        <span data-sk="Voliteľný checkbox — PC sa vypne 60 s po úspešnej zálohe. Zrušiť: <code>shutdown /a</code>."
+              data-en="Optional checkbox — PC shuts down 60 s after a successful backup. Cancel: <code>shutdown /a</code>.">
+          Voliteľný checkbox — PC sa vypne 60 s po úspešnej zálohe. Zrušiť: <code>shutdown /a</code>.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Systémová lišta" data-en="System tray">Systémová lišta</strong>
+        <span data-sk="Minimalizácia do lišty; kontextové menu na rýchle spustenie zálohy."
+              data-en="Minimize to tray; right-click menu for quick backup or exit.">
+          Minimalizácia do lišty; kontextové menu na rýchle spustenie zálohy.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Toast notifikácie" data-en="Toast notifications">Toast notifikácie</strong>
+        <span data-sk="Konfigurovateľné Windows oznámenia o úspechu alebo chybe."
+              data-en="Configurable Windows success / failure notifications.">
+          Konfigurovateľné Windows oznámenia o úspechu alebo chybe.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Single-instance" data-en="Single-instance">Single-instance</strong>
+        <span data-sk="Druhé spustenie len zobrazí existujúce okno do popredia."
+              data-en="Second launch brings the existing window to the front.">
+          Druhé spustenie len zobrazí existujúce okno do popredia.
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Rotujúci log" data-en="Rotating log">Rotujúci log</strong>
+        <span data-sk="<code>%APPDATA%\OrimslavBackup\backup.log</code> (max 5 MB × 3 súbory)."
+              data-en="<code>%APPDATA%\OrimslavBackup\backup.log</code> (max 5 MB × 3 files).">
+          <code>%APPDATA%\OrimslavBackup\backup.log</code> (max 5 MB × 3 súbory).
+        </span>
+      </div>
+
+      <div class="feat">
+        <strong data-sk="Dvojjazyčné UI" data-en="Bilingual UI">Dvojjazyčné UI</strong>
+        <span data-sk="Prepínanie SK / EN za behu, bez reštartu."
+              data-en="Switch SK / EN at runtime, no restart.">
+          Prepínanie SK / EN za behu, bez reštartu.
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Requirements -->
+  <div class="card">
+    <div class="card-title" data-sk="Požiadavky" data-en="Requirements">Požiadavky</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <label data-sk="Operačný systém" data-en="Operating system">Operačný systém</label>
+        <span>Windows 10 / 11</span>
+      </div>
+      <div class="info-item">
+        <label data-sk="Architektúra" data-en="Architecture">Architektúra</label>
+        <span>x86-64</span>
+      </div>
+      <div class="info-item">
+        <label data-sk="Python" data-en="Python">Python</label>
+        <span data-sk="Nie je potrebný (.exe)" data-en="Not required (.exe)">Nie je potrebný (.exe)</span>
+      </div>
+      <div class="info-item">
+        <label data-sk="WinRAR (rar.exe)" data-en="WinRAR (rar.exe)">WinRAR (rar.exe)</label>
+        <span data-sk="Iba pre RAR formát" data-en="Only for RAR format">Iba pre RAR formát</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command-line flags -->
+  <div class="card">
+    <div class="card-title" data-sk="Príkazové prepínače" data-en="Command-line flags">Príkazové prepínače</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-sk="Prepínač" data-en="Flag">Prepínač</th>
+          <th data-sk="Popis" data-en="Description">Popis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag" data-sk="(žiadny)" data-en="(none)">(žiadny)</span></td>
+          <td data-sk="Spustí grafické rozhranie" data-en="Launches the GUI">Spustí grafické rozhranie</td>
+        </tr>
+        <tr>
+          <td>--autorun</td>
+          <td data-sk="Načíta uložené nastavenia, spustí zálohu raz a skončí — bez GUI"
+              data-en="Loads saved config, runs backup once, exits — no GUI">
+            Načíta uložené nastavenia, spustí zálohu raz a skončí — bez GUI
+          </td>
+        </tr>
+        <tr>
+          <td>--autorun --shutdown-after</td>
+          <td data-sk="Rovnaké ako --autorun, ale po úspešnej zálohe vypne PC (60 s odklad)"
+              data-en="Same as --autorun, but shuts down the PC 60 s after a successful backup">
+            Rovnaké ako --autorun, ale po úspešnej zálohe vypne PC (60 s odklad)
+          </td>
+        </tr>
+        <tr>
+          <td>--minimized</td>
+          <td data-sk="Spustí GUI skryté v systémovej lište"
+              data-en="Starts GUI hidden in the system tray">
+            Spustí GUI skryté v systémovej lište
+          </td>
+        </tr>
+        <tr>
+          <td>--minimized --autorun</td>
+          <td data-sk="Spustí GUI skryté v lište a po 3 s spustí zálohu (logon autostart)"
+              data-en="Starts GUI hidden in tray and triggers backup after 3 s (logon autostart)">
+            Spustí GUI skryté v lište a po 3 s spustí zálohu (logon autostart)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Data location -->
+  <div class="card">
+    <div class="card-title" data-sk="Umiestnenie dát" data-en="Data location">Umiestnenie dát</div>
+    <p class="sub"
+       data-sk="Všetky nastavenia a logy sú uložené v <code>%APPDATA%\OrimslavBackup\</code>:"
+       data-en="All settings and logs are stored in <code>%APPDATA%\OrimslavBackup\</code>:">
+      Všetky nastavenia a logy sú uložené v <code>%APPDATA%\OrimslavBackup\</code>:
+    </p>
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-sk="Súbor" data-en="File">Súbor</th>
+          <th data-sk="Obsah" data-en="Contents">Obsah</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>config.json</td>
+          <td data-sk="Nastavenia používateľa" data-en="User settings">Nastavenia používateľa</td>
+        </tr>
+        <tr>
+          <td>backup.log</td>
+          <td data-sk="Rotujúci log zálohovania" data-en="Rotating backup log">Rotujúci log zálohovania</td>
+        </tr>
+        <tr>
+          <td>last_run.json</td>
+          <td data-sk="Výsledok posledného zálohovania" data-en="Result of the most recent run">Výsledok posledného zálohovania</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="sub" style="margin-top:16px;margin-bottom:6px;"
+       data-sk="<strong style='color:#e0e0e0'>Pomenovanie archívov:</strong>"
+       data-en="<strong style='color:#e0e0e0'>Archive naming:</strong>">
+      <strong style="color:#e0e0e0">Pomenovanie archívov:</strong>
+    </p>
+<pre><code data-sk="&lt;názov_priečinka&gt;_&lt;RRRR-MM-DD_HH-MM-SS&gt;.zip
+príklad: webapp_2026-05-07_17-00-12.zip"
+                  data-en="&lt;folder_name&gt;_&lt;YYYY-MM-DD_HH-MM-SS&gt;.zip
+example: webapp_2026-05-07_17-00-12.zip">&lt;názov_priečinka&gt;_&lt;RRRR-MM-DD_HH-MM-SS&gt;.zip
+príklad: webapp_2026-05-07_17-00-12.zip</code></pre>
+  </div>
+
+  <!-- Build from source -->
+  <div class="card">
+    <div class="card-title" data-sk="Zostavenie zo zdrojového kódu" data-en="Build from source">Zostavenie zo zdrojového kódu</div>
+<pre><code>git clone https://github.com/Orimslav/Backup_tool.git
+cd Backup_tool
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python backup_app.py</code></pre>
+    <p class="sub" style="margin-top:14px;"
+       data-sk="<code>.exe</code> sa zostavuje automaticky cez GitHub Actions pri každom tagu <code>v*</code>:"
+       data-en="The <code>.exe</code> is built automatically by GitHub Actions on every <code>v*</code> tag:">
+      <code>.exe</code> sa zostavuje automaticky cez GitHub Actions pri každom tagu <code>v*</code>:
+    </p>
+<pre><code>git tag v1.0.0
+git push origin v1.0.0</code></pre>
+  </div>
+
+  <!-- Support -->
+  <div class="card">
+    <div class="card-title" data-sk="Podpora" data-en="Support">Podpora</div>
+    <p class="sub"
+       data-sk="Ak vám BackupOrim pomáha v práci, projekt môžete podporiť kávou. Vďaka!"
+       data-en="If BackupOrim is useful in your work, consider supporting the project. Thanks!">
+      Ak vám BackupOrim pomáha v práci, projekt môžete podporiť kávou. Vďaka!
+    </p>
+    <div class="kofi-row">
+      <a class="kofi-btn" href="https://ko-fi.com/orimslav" target="_blank" rel="noopener">
+        <span style="font-size:1.1em;">☕</span>
+        <span data-sk="Podporiť na Ko-fi" data-en="Support on Ko-fi">Podporiť na Ko-fi</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-row">
+      <a href="https://github.com/Orimslav/Backup_tool" target="_blank">github.com/Orimslav/Backup_tool</a>
+      &nbsp;·&nbsp;
+      <a href="https://github.com/Orimslav" target="_blank">Orimslav on GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/miroslav-hrbka-103857210" target="_blank">LinkedIn</a>
+    </div>
+    <div data-sk="Vytvorené s ❤️ — Orimslav" data-en="Made with ❤️ by Orimslav">
+      Vytvorené s ❤️ — Orimslav
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang){
+  localStorage.setItem('lang',lang);
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-sk][data-en]').forEach(el=>{
+    const val=el.getAttribute('data-'+lang);
+    if(val!==null) el.innerHTML=val;
+  });
+  document.getElementById('btn-sk').classList.toggle('active',lang==='sk');
+  document.getElementById('btn-en').classList.toggle('active',lang==='en');
+
+  // Switch screenshot to matching language
+  const shot=document.getElementById('screenshot-img');
+  if(shot) shot.src='img/'+lang+'_screen.png';
+}
+setLang(localStorage.getItem('lang')||'sk');
+</script>
+</body>
+</html>
