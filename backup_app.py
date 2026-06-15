@@ -651,6 +651,15 @@ class BackupApp:
         self._update_day_labels()
         self._on_freq_changed()
 
+        # ---- Action row ----
+        tk.Frame(p, bg=C_SEP, height=1).pack(fill=tk.X, padx=8, pady=(8, 0))
+        auto_act_row = tk.Frame(p, bg=C_BG)
+        auto_act_row.pack(fill=tk.X, padx=8, pady=6)
+        b_save_auto = self._make_btn(auto_act_row, self.t("BTN_SAVE_SETTINGS"),
+                                     self._save_settings, outline=True)
+        b_save_auto.pack(side=tk.LEFT)
+        self._translatable.append((b_save_auto, "text", "BTN_SAVE_SETTINGS"))
+
     # -----------------------------------------------------------------------
     # Tab — Settings
     # -----------------------------------------------------------------------
@@ -870,17 +879,20 @@ class BackupApp:
             autostart.disable_logon)
 
     def _on_sched_toggle(self) -> None:
+        self._set_autostart(self._sched_var.get(), self._enable_scheduled,
+                            autostart.disable_scheduled)
+
+    def _enable_scheduled(self) -> None:
+        """(Re)create the Windows scheduled task from the current UI values."""
         freq_rmap = {self.t("FREQ_DAILY"): "daily", self.t("FREQ_WEEKDAYS"): "weekdays",
                      self.t("FREQ_WEEKLY"): "weekly"}
-        def _en():
-            freq = freq_rmap.get(self._sched_freq_var.get(), "daily")
-            days = [code for code, var in self._sched_day_vars.items() if var.get()] or ["MON"]
-            autostart.enable_scheduled(
-                self._pythonw(), self._script_path(),
-                int(self._sched_hh.get()), int(self._sched_mm.get()),
-                freq, days if freq == "weekly" else None,
-            )
-        self._set_autostart(self._sched_var.get(), _en, autostart.disable_scheduled)
+        freq = freq_rmap.get(self._sched_freq_var.get(), "daily")
+        days = [code for code, var in self._sched_day_vars.items() if var.get()] or ["MON"]
+        autostart.enable_scheduled(
+            self._pythonw(), self._script_path(),
+            int(self._sched_hh.get()), int(self._sched_mm.get()),
+            freq, days if freq == "weekly" else None,
+        )
 
     def _set_autostart(self, enabled: bool, enable_fn, disable_fn) -> None:
         try:
@@ -919,6 +931,18 @@ class BackupApp:
             self._log(self.t("LOG_SETTINGS_SAVED"), "ok")
         except OSError as e:
             messagebox.showerror(self.t("DLG_ERROR_TITLE"), str(e))
+            return
+        # Keep the Windows scheduled task in sync with the just-saved time /
+        # frequency / days. Without this, changing the time after the checkbox
+        # was already ticked would leave the task running at its old time.
+        if self._sched_var.get():
+            try:
+                self._enable_scheduled()
+                self._log(self.t("LOG_SCHEDULED_UPDATED").format(
+                    time=f"{int(self._sched_hh.get()):02d}:{int(self._sched_mm.get()):02d}"), "info")
+            except (OSError, RuntimeError, ValueError) as e:
+                messagebox.showerror(self.t("DLG_ERROR_TITLE"),
+                                     self.t("ERR_AUTOSTART_FAILED").format(err=e))
 
     def _validate(self) -> str | None:
         sources = list(self._src_listbox.get(0, tk.END))

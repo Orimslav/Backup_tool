@@ -79,6 +79,7 @@ LANGUAGES: dict[str, dict[str, str]] = {
         "LOG_CLEANUP": "Čistenie: odstraňujem {name}",
         "LOG_CLEANUP_DONE": "Čistenie dokončené.",
         "LOG_SETTINGS_SAVED": "Nastavenia uložené.",
+        "LOG_SCHEDULED_UPDATED": "Naplánovaná úloha aktualizovaná na {time}.",
         # Validation errors
         "ERR_NO_SOURCE": "Pridajte aspoň jeden zdrojový priečinok.",
         "ERR_NO_DEST": "Vyberte cieľový priečinok.",
@@ -181,6 +182,7 @@ LANGUAGES: dict[str, dict[str, str]] = {
         "LOG_CLEANUP": "Cleanup: removing {name}",
         "LOG_CLEANUP_DONE": "Cleanup complete.",
         "LOG_SETTINGS_SAVED": "Settings saved.",
+        "LOG_SCHEDULED_UPDATED": "Scheduled task updated to {time}.",
         # Validation errors
         "ERR_NO_SOURCE": "Add at least one source folder.",
         "ERR_NO_DEST": "Select a destination folder.",
